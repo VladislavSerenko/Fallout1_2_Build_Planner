@@ -1,0 +1,67 @@
+/* Concept B: Pip-Boy casing and green CRT. Style comparison only. */
+:root { --ink: #8de372; --muted: #669759; --green: #91ff75; --green-bright: #bcffa6; --amber: #e2c16b; --red: #ee9c66; --mono: "Consolas", "Courier New", monospace; }
+body { background: #0d100a; }
+.chassis { border: 8px ridge #7b7659; border-radius: 22px; padding: 0 14px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.48' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath filter='url(%23n)' opacity='.17' fill='%23bcb182' d='M0 0h160v160H0z'/%3E%3C/svg%3E"), linear-gradient(135deg, #777355, #404b34 42%, #64674a 75%, #343f2b); box-shadow: inset 0 0 0 3px #292e20, inset 0 0 22px #111a, 0 15px 55px #000; grid-template-rows: 78px minmax(0, 1fr) 31px; }
+.masthead { gap: 33px; padding: 0 14px; }
+.brand-title { color: #ded3a0; text-shadow: 2px 3px #252e1d; }
+.brand-mark { color: #d7c58c; }
+.tab { font-size: 13px; color: #c3c291; font-weight: bold; }
+.tab.active { color: #dddfb4; }
+.tab.active::after { height: 3px; background: #83dc68; box-shadow: 0 0 7px #6ad45255; }
+.metal-button { border: 2px outset #959474; border-radius: 6px; padding: 7px 17px; background: linear-gradient(#697454, #364a2d); color: #e2dcad; font-weight: bold; }
+.header-actions .metal-button::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #e08a51, #762e1a 60%, #2b160e); box-shadow: 0 0 0 2px #293723, 0 0 0 3px #8e9472; }
+.more-button { overflow: hidden; font-size: 18px; letter-spacing: -2px; }
+main { background: #051006; border: 4px inset #787e58; border-radius: 11px; overflow: hidden; }
+.tree-toolbar { background: #0b190a; border-bottom: 1px solid #4f78403d; padding: 16px 24px; }
+.tree-intro h1 { color: #a1ec84; font: bold 20px/1.4 var(--mono); letter-spacing: -.7px; }
+.tree-intro p { color: #64865a; }
+.perk-budget, .target-control { color: #9dbf84; }
+.perk-budget strong { background: #081006; border-color: #62874b; border-radius: 4px; color: #b0ff8c; box-shadow: inset 0 0 9px #000; }
+.target-control input { color: #a0ee80; border-color: #415c32; }
+.tree-options .search-field { background: #081206; border-color: #405d31; }
+.tree-options .search-field input { color: #9adf7e; }
+.map-scroll { background: radial-gradient(ellipse at 52% 40%, #37632921, #02080288 85%), repeating-linear-gradient(0deg, #86d36506 0 1px, transparent 1px 3px), #041003; }
+.level-axis { background: linear-gradient(90deg, #0a1608 83%, #0a160800); }
+.axis-heading { color: #68924f; }
+.axis-line { background: #66a24866; }
+.level-badge { border: 3px solid #5b7841; border-radius: 50%; background: radial-gradient(circle at 44% 38%, #1e3513, #081206 75%); color: #9aef77; font-size: 17px; font-weight: bold; box-shadow: 0 0 0 4px #162710, 0 0 0 6px #394f2a, 0 0 0 9px #091408; }
+.axis-selected .level-badge { color: #ecd694; border-color: #b6a15e; background: #1a2e10; }
+.lane-heading { font-size: 11px; color: #78ac5d; letter-spacing: 2.3px; font-weight: bold; }
+.tree-edge { stroke: #639d456e; stroke-width: 1.2; }
+.tree-edge.selected-edge { stroke: #99e277; stroke-width: 2; }
+.tree-perk { border: 1px solid transparent; background: #07140666; color: #8dcf71; border-radius: 7px; }
+.tree-perk>span { font-size: 10px; }
+.tree-perk img { filter: sepia(1) saturate(1.5) hue-rotate(38deg); opacity: .84; }
+.tree-perk:hover { color: #c8ffae; border-color: #7db75d; background: #193010; }
+.selected-node .tree-perk { background: linear-gradient(#263c19, #142710); border: 1px solid #a0cf72; color: #e5dc9e; box-shadow: 0 0 0 2px #53723844, inset 0 1px #d3e89222; }
+.selected-node .tree-perk img { filter: sepia(1) saturate(.9) hue-rotate(10deg); opacity: 1; }
+.node-details, .trait-info { background: #172d10; border-color: #66964a; color: #b0df91; }
+.node-badge { color: #e6ce81; }
+.tree-bottom { background: #101f0c; border-color: #39572b; color: #789d5f; }
+.zoom-controls button { color: #b1cf91; background: #253e19; border-color: #5f7742; border-radius: 4px; }
+.bottom-rim { color: #aca77b; }
+.drawer { border-left: 9px ridge #94916c; background: linear-gradient(90deg, #36472c, #263820 35%, #304026); color: #9cde80; }
+.drawer-heading { background: linear-gradient(#626f4c, #3b502e); border-bottom: 3px groove #879067; }
+.drawer-heading h2 { color: #ece0ae; font: bold 18px var(--mono); letter-spacing: .5px; }
+.drawer-heading h2>span { color: #b5c295; font-size: 10px; letter-spacing: 0; }
+.drawer .profile-heading input { color: #b8f697; border-color: #71875a; }
+.drawer .special-controls { background: #081506; border: 3px inset #65774c; border-radius: 6px; padding: 8px 12px; }
+.drawer .special-letter { color: #d0bb76; }
+.drawer .special-row { border-color: #3c582733; }
+.drawer .special-row input { color: #b9f39c; border: 2px inset #536542; border-radius: 4px; background: #0e1e0a; font-size: 16px; font-weight: bold; }
+.drawer .special-row button, .skill-values button { background: linear-gradient(#6b7c51, #364d28); border: 2px outset #8d9873; border-radius: 5px; color: #ded3a3; }
+.drawer .special-heading h2 { color: #e0cd8e; }
+.section-title h3 { color: #c5cc91; font-size: 12px; font-weight: bold; }
+.trait-description { border-left-color: #bbaa6d; background: #0c1a08; color: #b4db93; }
+.drawer .skills-screen { background: #091606; border: 3px inset #66784b; border-radius: 6px; }
+.screen-heading { background: #253b1c; border-color: #547138; }
+.skill-values strong { color: #b1f78b; }
+.skill-values input { border: 1px solid #6a874b; color: #e4dbac; background: #101e09; }
+.planned-row { background: #0e1e09; border: 2px inset #637548; border-radius: 6px; }
+.planned-level { color: #c9e19e; border: 2px solid #8d9e61; }
+.planned-row strong { color: #d0e1a6; }
+.analysis-details>summary, .side-details>summary { color: #c9d5a2; }
+input[type=checkbox] { accent-color: #8dca68; }
+.tree-perk img.art-invert { filter: invert(1) sepia(1) saturate(1.5) hue-rotate(38deg); }
+.selected-node .tree-perk img.art-invert { filter: invert(1) sepia(1) saturate(.9) hue-rotate(10deg); }
+@media(max-width:760px) { .chassis { border-width: 4px; border-radius: 12px; padding: 0 4px; grid-template-rows: 94px minmax(0, 1fr) 25px; } .masthead { padding-left: 8px; padding-right: 8px; gap: 5px; } .header-actions { flex-shrink: 0; } .header-actions .metal-button { white-space: nowrap; } .tree-intro h1 { font-size: 18px; } .drawer { border-left-width: 4px; } .drawer .special-controls { padding: 5px 8px; } }

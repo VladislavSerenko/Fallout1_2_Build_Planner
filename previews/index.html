@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Fallout 2 · Style comparison</title>
+  <style>
+    * { box-sizing: border-box; } body { margin: 0; padding: 36px; font: 15px/1.6 "Segoe UI", sans-serif; background: #14160f; color: #d8d7bd; }
+    h1 { font-size: 29px; margin: 0 0 6px; font-weight: 500; } p { color: #9da28a; margin: 0 0 24px; max-width: 900px; }
+    nav { display: flex; gap: 10px; margin-bottom: 22px; } button, a { font: inherit; } button { cursor: pointer; color: #d8d7bd; background: #303726; padding: 8px 20px; border: 1px solid #576245; border-radius: 4px; } button[aria-pressed=true] { color: #e1c77c; border-color: #b19754; }
+    main { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; } article { min-width: 0; border: 1px solid #424b34; background: #1d2318; border-radius: 7px; overflow: hidden; } header { padding: 17px 20px 15px; } h2 { margin: 0 0 3px; font-size: 19px; font-weight: 500; } article p { font-size: 13px; margin: 0; } img { width: 100%; display: block; } footer { padding: 13px 20px; } a { color: #dfc27b; text-underline-offset: 4px; }
+    .note { margin: 22px 0 0; font-size: 13px; } @media(max-width:850px) { body { padding: 20px; } main { grid-template-columns: 1fr; } h1 { font-size: 24px; } }
+  </style>
+</head>
+<body>
+  <h1>Two original planner styles</h1>
+  <p>Both preserve the tree and original artwork. These working HTML previews show a sample build. The main planner now combines elements of both styles.</p>
+  <nav aria-label="Screen to compare"><button data-view="tree" aria-pressed="true">Perk tree</button><button data-view="special" aria-pressed="false">SPECIAL</button></nav>
+  <main>
+    <article><header><h2>A · Character screen</h2><p>Gray metal, yellow headings, black panels and bright green text.</p></header><a href="classic.html"><img id="classic-shot" src="classic-tree.png" alt="Variant A: metal interface inspired by the Fallout 1–2 character screen"></a><footer><a href="classic.html">Open and try variant A →</a></footer></article>
+    <article><header><h2>B · Pip-Boy 2000</h2><p>Rounded olive casing, a recessed green display and a soft glow.</p></header><a href="pipboy.html"><img id="pipboy-shot" src="pipboy-tree.png" alt="Variant B: a Pip-Boy interface"></a><footer><a href="pipboy.html">Open and try variant B →</a></footer></article>
+  </main>
+  <p class="note">Both variants work offline with separate saves. Changes in a preview do not affect your main build.</p>
+  <script>
+    document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
+      document.querySelectorAll('[data-view]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      ['classic', 'pipboy'].forEach(theme => document.getElementById(theme + '-shot').src = theme + '-' + button.dataset.view + '.png');
+    }));
+  </script>
+</body>
+</html>
