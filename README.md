@@ -6,6 +6,8 @@ Choose **Fallout 1** or **Fallout 2** in the header. The original logo, perk tre
 
 ## Using the planner
 
+Select a multi-rank perk in the main tree to reveal **− / selected ranks / +** directly on its card. Add ranks without opening SPECIAL, or use **−** to remove the latest rank; removing the last rank clears the selection. Each rank costs one pick. Game limits and suitable level windows apply, and the count stays synchronized with SPECIAL and saved builds.
+
 1. Select perks directly in the tree; click again to remove them. Automatic picks are arranged by their unlock levels, so tree click order does not schedule a perk before it becomes available. Changes to Skilled recompute those assignments. A perk with no suitable level stays in the wanted list and reserves one pick. Each rank uses one pick. **Reset perks** clears all selected ranks and wanted perks while preserving your character and skill goals.
 2. Set **Target level**. **Perks left** shows remaining picks. Choose Skilled under **SPECIAL → Traits** to change the schedule from 3–6–9 to 4–8–12. Search finds English perk names and descriptions. Click a branch heading to focus it; click again to restore all branches. Click Gain SPECIAL to expand its seven perks.
 3. A perk's **i** button opens its inline details in **SPECIAL**. Large green **✓** indicators mark met requirements; amber **!** indicators mark picks that need preparation. Tree lines group development branches; they are not prerequisite links.

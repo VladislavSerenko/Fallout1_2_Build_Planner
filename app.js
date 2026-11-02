@@ -121,7 +121,7 @@
     refresh();
     document.querySelector(`[data-tree-perk="${id}"]`)?.focus({preventScroll: true});
   }
-  function changePerkRanks(id, step) {
+  function changePerkRanks(id, step, fromTree = false) {
     const perk = perkById(id);
     const entries = state.picks.map((pick, index) => ({pick, index})).filter(entry => entry.pick?.id === id).sort((a, b) => a.pick.at - b.pick.at || a.index - b.index);
     const pending = state.wanted.includes(id), count = entries.length + Number(pending);
@@ -132,20 +132,30 @@
       const source = entries.find(entry => entry.index === activeSlot)?.pick || entries.at(-1)?.pick;
       state.picks[index] = {id, at: Math.max(E.schedule(state)[index], perk.level), boosts: E.clone(source?.boosts || {}), manualLevel: false};
     } else {
-      if (count <= 1) return;
-      if (pending) state.wanted = state.wanted.filter(wanted => wanted !== id);
-      else {
+      if (count <= (fromTree ? 0 : 1)) return;
+      if (pending) {
+        state.wanted = state.wanted.filter(wanted => wanted !== id);
+        if (expandedPlan === 'wanted-' + id) expandedPlan = '';
+      } else {
         const latest = entries.pop();
         state.picks[latest.index] = null;
         if (activeSlot === latest.index) {
-          activeSlot = entries.at(-1).index;
-          draft = E.clone(state.picks[activeSlot]);
-          expandedPlan = 'slot-' + activeSlot;
+          if (entries.length) {
+            activeSlot = entries.at(-1).index;
+            inspected = id;
+            draft = E.clone(state.picks[activeSlot]);
+            expandedPlan = 'slot-' + activeSlot;
+          } else {
+            activeSlot = 0; inspected = 'awareness'; expandedPlan = '';
+            draft = {id: inspected, at: E.schedule(state)[0] || state.target, boosts: {}};
+          }
         }
       }
     }
     refresh();
-    document.querySelector(`[data-rank-perk="${id}"][data-rank-step="${step}"]:not(:disabled)`)?.focus({preventScroll: true});
+    const control = fromTree ? 'data-tree-rank' : 'data-rank';
+    const focus = document.querySelector(`[${control}-perk="${id}"][${control}-step="${step}"]:not(:disabled)`) || document.querySelector(`[${control}-perk="${id}"]:not(:disabled)`) || (fromTree ? document.querySelector(`[data-tree-perk="${id}"]`) : null);
+    focus?.focus({preventScroll: true});
   }
   function openPanel(id) {
     const panel = $(id);
@@ -277,7 +287,8 @@
     const rows = levels.map((level, index) => {
       const items = perks.filter(perk => perk.level <= level && (!index || perk.level > levels[index - 1]));
       const count = Math.max(1, ...lanes.map(lane => Math.ceil(items.filter(perk => perk.category === lane.id).length / lane.columns)));
-      const row = {level, index, y, height: count * 86 + 42, items};
+      const step = items.some(perk => perk.ranks > 1 && selectedIds.has(perk.id)) ? 110 : 86;
+      const row = {level, index, y, height: count * step + 42, step, items};
       y += row.height;
       return row;
     });
@@ -292,14 +303,19 @@
           const gridRow = Math.floor(index / lane.columns), column = index % lane.columns;
           const inRow = Math.min(lane.columns, items.length - gridRow * lane.columns);
           const x = lane.x + (lane.columns - inRow) * 54 + column * 108;
-          const nodeY = row.y + gridRow * 86 + 26;
+          const nodeY = row.y + gridRow * row.step + 26;
           const selected = perk.family ? gainPerks.some(p => selectedIds.has(p.id)) : selectedIds.has(perk.id);
           const picks = state.picks.map((pick, slot) => ({pick, slot})).filter(entry => entry.pick?.id === perk.id);
           const pending = state.wanted.includes(perk.id);
           const hasProblem = pending || picks.some(entry => !result.reports[entry.slot]?.ok);
+          const rankCount = picks.length + Number(pending);
+          const showRanks = selected && perk.ranks > 1;
+          const canAddRank = showRanks && rankCount < perk.ranks && budget.remaining > 0 && freeSlot(perk.id) >= 0;
+          const rankReason = rankCount >= perk.ranks ? 'All ranks selected' : !budget.remaining ? 'No perk picks left. Remove a perk or raise the target level.' : 'No suitable free pick for another rank. Raise the target level or remove a perk.';
+          const rankControls = showRanks ? `<div class="tree-rank-control" role="group" aria-label="Ranks: ${escape(perk.name)}"><button class="metal-button" data-tree-rank-perk="${perk.id}" data-tree-rank-step="-1" aria-label="Remove rank: ${escape(perk.name)}" title="Remove the latest planned rank">−</button><output aria-label="${rankCount} of ${perk.ranks} ranks selected">${rankCount}/${perk.ranks}</output><button class="metal-button" data-tree-rank-perk="${perk.id}" data-tree-rank-step="1" aria-label="Add rank: ${escape(perk.name)}" title="${canAddRank ? 'Add a rank at the next suitable free pick' : rankReason}" ${canAddRank ? '' : 'disabled'}>+</button></div>` : '';
           paths.push(line(`M ${lane.center} ${nodeY - 22} C ${lane.center} ${nodeY - 8}, ${x + 50} ${nodeY - 15}, ${x + 50} ${nodeY + 4}`, selected));
           const badge = perk.family ? `${gainPerks.filter(p => selectedIds.has(p.id)).length || '+'} / 7` : selected ? pending ? 'wanted' : hasProblem ? '!' : picks.length > 1 ? '×' + picks.length : '✓' : '';
-          nodes.push(`<div class="tree-node ${selected ? 'selected-node' : ''} ${hasProblem ? 'needs-preparation' : ''} ${row.level > state.target ? 'future-node' : ''} ${!selected && !budget.remaining && !perk.family ? 'quota-blocked' : ''}" style="left:${x}px;top:${nodeY}px"><button class="tree-perk" ${perk.family ? 'data-gain-family' : `data-tree-perk="${perk.id}" aria-pressed="${selected}" aria-disabled="${!selected && !budget.remaining}"`} title="${escape(perk.family ? 'Expand all seven Gain SPECIAL perks' : perk.name + ' · Lv. ' + perk.level + '+. ' + perk.description)}" aria-label="${escape(perk.name)}${perk.family ? ': expand seven perks' : selected ? ', selected' : ', select'}"><img src="${perk.image}" alt="" loading="lazy"><span>${perk.name}</span>${badge ? `<small class="node-badge">${badge}</small>` : ''}</button>${perk.family ? '' : `<button class="node-details" data-perk-info="${perk.id}" aria-label="Requirements: ${perk.name}" title="Perk details">i</button>`}</div>`);
+          nodes.push(`<div class="tree-node ${selected ? 'selected-node' : ''} ${showRanks ? 'ranked-node' : ''} ${hasProblem ? 'needs-preparation' : ''} ${row.level > state.target ? 'future-node' : ''} ${!selected && !budget.remaining && !perk.family ? 'quota-blocked' : ''}" style="left:${x}px;top:${nodeY}px"><button class="tree-perk" ${perk.family ? 'data-gain-family' : `data-tree-perk="${perk.id}" aria-pressed="${selected}" aria-disabled="${!selected && !budget.remaining}"`} title="${escape(perk.family ? 'Expand all seven Gain SPECIAL perks' : perk.name + ' · Lv. ' + perk.level + '+. ' + perk.description)}" aria-label="${escape(perk.name)}${perk.family ? ': expand seven perks' : selected ? ', selected' : ', select'}"><img src="${perk.image}" alt="" loading="lazy"><span>${perk.name}</span>${badge ? `<small class="node-badge">${badge}</small>` : ''}</button>${rankControls}${perk.family ? '' : `<button class="node-details" data-perk-info="${perk.id}" aria-label="Requirements: ${perk.name}" title="Perk details">i</button>`}</div>`);
         });
       }
     }
@@ -516,6 +532,8 @@
       else state.picks[activeSlot] = null;
       expandedPlan = '';
       refresh();
+    } else if (button.dataset.treeRankStep) {
+      changePerkRanks(button.dataset.treeRankPerk, Number(button.dataset.treeRankStep), true);
     } else if (button.dataset.rankStep) {
       changePerkRanks(button.dataset.rankPerk, Number(button.dataset.rankStep));
     } else if (button.hasAttribute('data-close-preview')) {

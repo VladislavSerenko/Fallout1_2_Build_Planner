@@ -37,6 +37,7 @@ main { background: #051006; border: 4px inset #787e58; border-radius: 11px; over
 .selected-node .tree-perk img { filter: sepia(1) saturate(.9) hue-rotate(10deg); opacity: 1; }
 .node-details, .trait-info { background: #172d10; border-color: #66964a; color: #b0df91; }
 .node-badge { color: #e6ce81; }
+.tree-rank-control output { border: 2px solid; border-color: var(--well-edge); background: linear-gradient(90deg, #090f06, #202b18 46%, #090f06); color: #e1d5a1; box-shadow: inset 1px 1px 3px #000b; }
 .tree-bottom { background: #101f0c; border-color: #39572b; color: #789d5f; }
 .zoom-controls button { color: #b1cf91; background: #253e19; border-color: #5f7742; border-radius: 4px; }
 .bottom-rim { color: #aca77b; }
