@@ -1,10 +1,25 @@
-"""Bundle the page and original artwork into a single offline HTML file."""
+"""Version hosted assets and bundle the page and original artwork for offline use."""
 import base64
+import hashlib
 import pathlib
 import re
 
 root = pathlib.Path(__file__).resolve().parent
 html = (root / 'index.html').read_text(encoding='utf-8')
+
+
+def version_asset(match):
+    name = match.group(2)
+    content = (root / name).read_text(encoding='utf-8').encode('utf-8')
+    digest = hashlib.sha256(content).hexdigest()[:12]
+    return match.group(1) + name + '?v=' + digest + match.group(3)
+
+
+# A changed script or stylesheet must not reuse a previous deployment's cached URL.
+html = re.sub(r'((?:href|src)=")((?:styles|tree|pipboy)\.css|(?:data|fallout1-data|mechanics|engine|app)\.js)(?:\?[^" ]*)?(")', version_asset, html)
+(root / 'index.html').write_text(html, encoding='utf-8')
+# Keep the standalone bundling independent of the hosted asset URLs.
+html = re.sub(r'((?:href|src)="[^"]+\.(?:css|js))\?v=[a-f0-9]+(")', r'\1\2', html)
 css = (root / 'styles.css').read_text(encoding='utf-8')
 css += '\n' + (root / 'tree.css').read_text(encoding='utf-8')
 theme = (root / 'pipboy.css').read_text(encoding='utf-8')

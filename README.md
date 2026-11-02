@@ -26,7 +26,7 @@ Every editable section has its own reset: **Reset SPECIAL** restores base attrib
 
 Perks with multiple ranks have a **− / current of maximum / +** control directly below their description in SPECIAL. **+** immediately schedules another rank in a suitable free pick and copies the selected rank's chems; each rank remains separately editable. **−** removes the latest planned rank while keeping the first. Each rank costs one perk pick, and the control explains when no suitable pick remains. Limits follow the selected game, including two Action Boy ranks in Fallout 2 and three in Fallout 1. Planned rows label each rank separately.
 
-**Bank unused picks** beside **Perks left** is enabled by default for both games. Every skipped pick remains available at later eligible levels, including multiple picks at the same level. For example, a skipped level-6 pick can pay for a second Action Boy rank after level 12. Turn it off for the original game's one-pick saving rule, where another perk award replaces an unused pick. The same choice appears under **SPECIAL → Planned perks → Unused perk picks**. Modern Fallout 2 sfall implements accumulation; match the planner's setting to the rules enabled in your game. The setting persists in JSON and build links. Version-1 builds migrate once to the new accumulation default, preserving their character and perk choices; version-2 builds preserve an explicit choice of original rules.
+Unused perk picks **always accumulate in both games**. Every skipped pick remains available at later eligible levels, including multiple picks at the same level. For example, a skipped level-6 pick can pay for a second Action Boy rank after level 12. There is no banking switch or saving-rule selector. Existing JSON files, build links and browser saves use accumulation automatically, including older saves marked `mode: "vanilla"`. Character attributes, perk choices, pinned levels and preparation remain supported.
 
 ## Calculation rules and scope
 
@@ -48,7 +48,7 @@ Perks with multiple ranks have a **− / current of maximum / +** control direct
 - SPECIAL is capped at 1–10. Requirements use current stats, including the chems configured for the specific pick. A perk remains after temporary effects end. Chem bonuses apply only when taking that pick.
 - Skill points are granted for levels 2 through the target. Gifted, Educated and permanent Intelligence upgrades affect income; temporary chems do not. Fallout 2 also has Skilled income and Gain Intelligence. In Fallout 1, Night Person's day/night setting applies throughout the plan, including income; night is evaluated at 18:00.
 - Training uses permanent stats and a bank capped at 99 when leveling. Fallout 1 Educated's immediate +2 can temporarily exceed the bank cap. Both games' initial formulas, tags, training costs, normal perk bonuses and Tag! are modeled. Fallout 1 uses its original skill formulas, rounding down the average for skills based on two attributes. Conditional bonuses from Ghost and Survivalist and Master Trader's hidden pricing bonus do not satisfy skill requirements.
-- Original Fallout 1 and 2 store one unused perk pick; later perk awards replace it. The planner defaults to **Bank unused picks** in both games, keeping all skipped picks and allowing multiple selections at the same level. This uses `mode: "sfall"` in JSON for compatibility with existing accumulated builds. Turn it off to use `mode: "vanilla"`. Original level, rank, stat and skill requirements still apply.
+- The planner always keeps all skipped perk picks and allows multiple selections at the same level. Exports retain `mode: "sfall"` for compatibility; older saving-rule fields cannot disable accumulation. This matches modern Fallout 2 sfall's behavior; the unmodified original games keep only one unused pick. Original level, rank, stat and skill requirements still apply.
 - Calculations assume normal difficulty and a new character starting at level 1. Books, NPC training, withdrawal, addiction and modded rules are not modeled. Zeta scans represent an explicitly selected successful outcome with a 50% chance.
 - Here and Now grants a level already included in your target; it does not create a second pick at the same level.
 
@@ -86,6 +86,8 @@ Build the standalone file with standard Python 3:
 ```text
 python fallout2-planner/build-standalone.py
 ```
+
+This also updates the hosted script and stylesheet URLs with content versions, so a new deployment loads changed files even when an older release is cached. Rebuilding unchanged sources produces the same output. Run the cache-version and offline-bundle regression with `python fallout2-planner/build.test.py`.
 
 Run calculation tests with Node.js 22+; no packages are required:
 

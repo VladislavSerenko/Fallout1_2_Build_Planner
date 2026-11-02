@@ -5,7 +5,7 @@ require('./fallout1-data.js');
 const E = require('./engine.js');
 
 function fresh(overrides = {}) {
-  return {...E.defaults(), mode: 'vanilla', base: {ST: 5, PE: 5, EN: 5, CH: 5, IN: 5, AG: 5, LK: 10}, traits: [], tags: ['Small Guns', 'Repair', 'Speech'], picks: [], skillGoals: {}, operations: [], ...overrides};
+  return {...E.defaults(), base: {ST: 5, PE: 5, EN: 5, CH: 5, IN: 5, AG: 5, LK: 10}, traits: [], tags: ['Small Guns', 'Repair', 'Speech'], picks: [], skillGoals: {}, operations: [], ...overrides};
 }
 const pick = (id, at, boosts = {}, extra = {}) => ({id, at, boosts, ...extra});
 
@@ -18,7 +18,7 @@ test('Both games accumulate unused perk picks by default', () => {
   }
 });
 
-test('Legacy saves migrate once to accumulation without changing the character or picks', () => {
+test('Legacy saves use accumulation without changing the character or picks', () => {
   for (const game of ['fallout1', 'fallout2']) {
     const input = {...fresh(), version: 1, game, mode: 'vanilla', picks: [pick('awareness', 3, {buffout: 0, mentats: 1, psycho: 0}), null, pick('action-boy', 12, {buffout: 1, mentats: 0, psycho: 0})]};
     const before = E.clone(input);
@@ -28,16 +28,18 @@ test('Legacy saves migrate once to accumulation without changing the character o
     for (const key of ['game', 'base', 'traits', 'tags', 'operations', 'skillGoals']) assert.deepEqual(actual[key], input[key]);
     assert.deepEqual(actual.picks.map(p => p && [p.id, p.at, p.boosts]), input.picks.map(p => p && [p.id, p.at, p.boosts]));
     assert.deepEqual(input, before);
-    assert.equal(E.cleanState({...actual, mode: 'vanilla'}).mode, 'vanilla');
+    assert.equal(E.cleanState({...actual, mode: 'vanilla'}).mode, 'sfall');
   }
 });
 
-test('Explicit original-game rules survive JSON roundtrips in both games', () => {
+test('Old saving-rule fields cannot disable accumulation in either save version or game', () => {
   for (const game of ['fallout1', 'fallout2']) {
-    const input = {...E.defaults(game), mode: 'vanilla'};
-    const actual = E.cleanState(JSON.parse(JSON.stringify(input)));
-    assert.equal(actual.mode, 'vanilla');
-    assert.equal(E.cleanState(actual).mode, 'vanilla');
+    for (const version of [1, 2]) {
+      const input = {...E.defaults(game), version, mode: 'vanilla'};
+      const actual = E.cleanState(JSON.parse(JSON.stringify(input)));
+      assert.equal(actual.mode, 'sfall');
+      assert.equal(E.cleanState(actual).mode, 'sfall');
+    }
   }
   assert.equal(E.cleanState({...E.defaults(), version: 3}), null);
 });
@@ -47,7 +49,7 @@ test('Fallout 1 can spend accumulated early picks on all three Action Boy ranks'
   const actual = E.simulate(E.cleanState(input));
   assert.equal(actual.ranks['action-boy'], 3);
   assert.ok(Object.values(actual.reports).every(report => report.ok));
-  assert.ok(Object.values(E.simulate({...input, mode: 'vanilla'}).reports).some(report => !report.ok));
+  assert.ok(Object.values(E.simulate({...input, mode: 'vanilla'}).reports).every(report => report.ok));
 });
 
 test('Automatic picks follow unlock levels regardless of tree selection order', () => {
@@ -60,9 +62,11 @@ test('Automatic picks follow unlock levels regardless of tree selection order', 
     for (const [index, selected] of actual.picks.entries()) if (selected) {
       assert.ok(selected.at >= E.perkById(selected.id).level);
       assert.ok(selected.at >= levels[index]);
-      assert.ok(!levels[index + 1] || selected.at < levels[index + 1]);
+      assert.ok(selected.at <= input.target);
     }
-    assert.equal(actual.picks[7].id, 'sniper');
+    assert.equal(actual.picks.find(item => item?.id === 'sniper').at, 24);
+    const reports = Object.values(E.simulate({...input, picks: actual.picks, wanted: []}).reports);
+    assert.ok(reports.every(report => report.requirements.filter(req => ['slot', 'level'].includes(req.kind)).every(req => req.ok)));
     assert.deepEqual(E.arrangePicks({...input, picks: actual.picks, wanted: []}).picks, actual.picks);
     assert.deepEqual(input.picks, []);
   }
@@ -72,9 +76,9 @@ test('Automatic scheduling repairs early saved picks and survives Skilled change
   const input = fresh({target: 24, picks: [pick('sniper', 3), pick('sharpshooter', 6), pick('awareness', 9)]});
   const actual = E.arrangePicks(input);
   assert.equal(actual.picks[0].id, 'awareness');
-  assert.equal(actual.picks[2].id, 'sharpshooter');
-  assert.equal(actual.picks[7].id, 'sniper');
-  assert.equal(actual.slots[0], 7);
+  assert.equal(actual.picks[1].id, 'sharpshooter');
+  assert.equal(actual.picks[2].id, 'sniper');
+  assert.equal(actual.slots[0], 2);
   const skilled = {...input, traits: ['skilled'], picks: actual.picks};
   const adjusted = E.arrangePicks(skilled);
   assert.deepEqual(adjusted.picks.filter(Boolean).map(item => [item.id, item.at]), [['awareness',4],['sharpshooter',9],['sniper',24]]);
@@ -83,11 +87,11 @@ test('Automatic scheduling repairs early saved picks and survives Skilled change
 test('Manual perk levels and repeated-rank configuration survive automatic arrangement', () => {
   const input = fresh({target: 24, picks: [pick('action-boy', 3, {mentats:1}), pick('action-boy', 6, {buffout:1}), null, null, null, pick('awareness',20)]});
   const actual = E.arrangePicks(input);
-  assert.equal(actual.picks[5].id, 'awareness');
-  assert.equal(actual.picks[5].at, 20);
-  assert.equal(actual.picks[5].manualLevel, true);
-  assert.deepEqual(actual.picks.filter(item=>item?.id==='action-boy').map(item=>[item.at,item.boosts]), [[12,{mentats:1}],[15,{buffout:1}]]);
-  assert.equal(E.cleanState({...input,picks:actual.picks}).picks[5].manualLevel, true);
+  const manual = actual.picks.find(item => item?.id === 'awareness');
+  assert.equal(manual.at, 20);
+  assert.equal(manual.manualLevel, true);
+  assert.deepEqual(actual.picks.filter(item=>item?.id==='action-boy').map(item=>[item.at,item.boosts]), [[12,{mentats:1}],[12,{buffout:1}]]);
+  assert.equal(E.cleanState({...input,picks:actual.picks}).picks.find(item => item?.id === 'awareness').manualLevel, true);
 });
 
 test('An insufficient target keeps every selected rank and exposes genuine pick shortages', () => {
@@ -127,30 +131,29 @@ test('Sniper is unavailable at level 20 even with sufficient SPECIAL', () => {
   assert.equal(actual.ok, false);
   assert.equal(actual.requirements.find(r => r.kind === 'level').ok, false);
 });
-test('Vanilla allows deferring the level 18 pick to level 20', () => {
+test('A level 18 pick can be deferred to level 20', () => {
   const input = fresh({target: 20, picks: [null, null, null, null, null, pick('awareness', 20)]});
   assert.equal(E.simulate(input).reports[5].ok, true);
 });
-test('Vanilla loses a pick at the next event; sfall preserves it', () => {
-  const input = fresh({target: 6, picks: [pick('awareness', 6)]});
-  assert.equal(E.simulate(input).reports[0].ok, false);
-  input.mode = 'sfall';
-  assert.equal(E.simulate(input).reports[0].ok, true);
+test('A saved pick never expires at the next perk award, including legacy mode metadata', () => {
+  for (const mode of ['vanilla', 'sfall', undefined]) {
+    const input = fresh({target: 6, mode, picks: [pick('awareness', 6)]});
+    assert.equal(E.simulate(input).reports[0].ok, true);
+  }
 });
-test('sfall permits two banked picks at the same level', () => {
+test('Two banked picks can be spent at the same level', () => {
   const input = fresh({target: 9, mode: 'sfall', picks: [pick('awareness', 9), pick('quick-pockets', 9)]});
   const actual = E.simulate(input);
   assert.equal(actual.reports[0].ok, true);
   assert.equal(actual.reports[1].ok, true);
 });
 test('A skipped level 6 pick funds a second Action Boy rank when picks accumulate', () => {
-  const input = fresh({target: 24, base: {ST: 5, PE: 5, EN: 3, CH: 1, IN: 7, AG: 9, LK: 7}, traits: ['gifted', 'fast-shot'], tags: ['Small Guns', 'Unarmed', 'Speech'], picks: [pick('quick-pockets', 3), null, pick('better-criticals', 9), pick('lifegiver', 12), pick('lifegiver', 15), pick('action-boy', 18), pick('bonus-rate-of-fire', 21), pick('sniper', 24)]});
+  const input = fresh({target: 24, mode: 'vanilla', base: {ST: 5, PE: 5, EN: 3, CH: 1, IN: 7, AG: 9, LK: 7}, traits: ['gifted', 'fast-shot'], tags: ['Small Guns', 'Unarmed', 'Speech'], picks: [pick('quick-pockets', 3), null, pick('better-criticals', 9), pick('lifegiver', 12), pick('lifegiver', 15), pick('action-boy', 18), pick('bonus-rate-of-fire', 21), pick('sniper', 24)]});
   const original = E.arrangePicks(input);
-  assert.equal(original.picks[1], null);
   assert.equal(original.picks.filter(Boolean).length, 7);
   const requested = {...input, picks: [...input.picks]};
   requested.picks[1] = pick('action-boy', 24);
-  assert.equal(E.simulate(requested).reports[1].requirements.find(req => req.kind === 'slot').ok, false);
+  assert.equal(E.simulate(requested).reports[1].requirements.find(req => req.kind === 'slot').ok, true);
   const accumulated = E.arrangePicks({...requested, mode: 'sfall'});
   const actual = E.simulate({...requested, mode: 'sfall', ...accumulated});
   assert.equal(accumulated.picks.filter(Boolean).length, 8);
@@ -284,11 +287,10 @@ test('An invalid early perk grants no bonuses to later levels', () => {
   assert.equal(actual.stats.PE, 5);
   assert.equal(actual.ranks['gain-perception'], undefined);
 });
-test('A goal needs a free pick within its valid interval', () => {
+test('A late goal can spend an early banked pick while the latest pick is occupied', () => {
   const input = fresh({target: 20, goal: 'awareness', picks: [null, null, null, null, null, pick('quick-pockets', 18)]});
-  assert.equal(E.goalCheck(input).hasSlot, false);
-  input.mode = 'sfall';
   assert.equal(E.goalCheck(input).hasSlot, true);
+  assert.equal(E.goalCheck({...input, mode: 'vanilla'}).report.ok, true);
 });
 test('Import validation limits numbers, duplicates and mutually exclusive upgrades', () => {
   const input = {...fresh(), target: 9999, name: '<script>кириллица</script>', traits: ['gifted', 'gifted', 'fake'], operations: [{id: 'zeta-ncr', at: 2}, {id: 'zeta-sf', at: 3}], picks: [pick('awareness', 3, {'power-armor': 1, 'advanced-armor': 1, mentats: 99})]};

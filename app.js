@@ -55,13 +55,10 @@
   }
   function freeSlot(id) {
     const perk = perkById(id), levels = E.schedule(state);
-    return levels.findIndex((level, index) => !state.picks[index] && Math.max(level, perk.level) <= state.target && (state.mode === 'sfall' || !levels[index + 1] || perk.level < levels[index + 1]));
+    return levels.findIndex((level, index) => !state.picks[index] && Math.max(level, perk.level) <= state.target);
   }
   function noFreePickMessage() {
-    const hint = state.mode === 'vanilla' && perkBudget().remaining > 0
-      ? ' Original rules do not accumulate earlier picks. Enable Bank unused picks next to Perks left to use accumulation.'
-      : '';
-    return 'No suitable free pick for another rank. Raise the target level or remove a perk.' + hint;
+    return 'No suitable free pick for another rank. Raise the target level or remove a perk.';
   }
   function perkBudget() {
     const capacity = E.schedule(state).length;
@@ -194,11 +191,6 @@
     $('target-level').max = rules.maxLevel;
     $('night-person-settings').hidden = !first || !state.traits.includes('night-person');
     $('planning-time').value = state.time || 'day';
-    $('perk-saving-mode').value = state.mode;
-    $('bank-unused-picks').checked = state.mode === 'sfall';
-    $('perk-saving-note').textContent = state.mode === 'sfall'
-      ? 'Every unused pick stays available. Spend it at any later level, including alongside another pick. Enabled by default for both games; match this setting to your game’s accumulation rules.'
-      : 'You can postpone a choice, but only one pick is saved. The next perk award replaces an unused pick instead of adding to it.';
     $('fallout1-manual').hidden = !first; $('fallout2-manual').hidden = first;
     $('manual-game').textContent = 'FIELD MANUAL / ' + rules.title.toUpperCase();
     $('archive-title').textContent = first ? 'Every advantage has a story.' : 'The wasteland has its own rewards.';
@@ -279,7 +271,7 @@
     $('perk-available').textContent = budget.remaining;
     $('reset-perks').disabled = !budget.used;
     $('reset-planned-perks').disabled = !budget.used;
-    $('perk-budget').title = `${budget.used} of ${budget.capacity} picks used. Wanted perks also reserve a pick. ${state.mode === 'sfall' ? 'Unused picks accumulate and can be spent at later levels.' : 'Original rules: earlier free picks cannot be carried past the next perk award.'}`;
+    $('perk-budget').title = `${budget.used} of ${budget.capacity} picks used. Wanted perks also reserve a pick. Unused picks always accumulate and can be spent at later levels.`;
     $('perk-budget').classList.toggle('budget-empty', !budget.remaining);
     const search = $('perk-search').value.trim().toLocaleLowerCase('en');
     const levels = E.schedule({...state, target: Math.min(E.gameRules(state).maxLevel, Math.max(24, state.target))});
@@ -607,9 +599,6 @@
     const input = event.target;
     if (input.id === 'game-select') {
       switchGame(input.value);
-    } else if (input.id === 'perk-saving-mode' || input.id === 'bank-unused-picks') {
-      state.mode = (input.id === 'bank-unused-picks' ? input.checked : input.value === 'sfall') ? 'sfall' : 'vanilla';
-      refresh();
     } else if (input.id === 'mechanic-luck' || input.id === 'mechanic-critical') {
       if (input.id === 'mechanic-luck') mechanicsLuck = Math.max(1, Math.min(10, Math.trunc(Number(input.value) || 1)));
       else mechanicsCritical = Math.max(0, Math.min(100, Number(input.value) || 0));

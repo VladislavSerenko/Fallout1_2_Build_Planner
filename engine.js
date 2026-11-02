@@ -103,8 +103,8 @@
     value.name = typeof input.name === 'string' ? input.name.slice(0, 60) : value.name;
     if (value.name.trim().toLowerCase() === '\u0438\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0439') value.name = 'Chosen One';
     value.target = clamp(Math.trunc(Number(input.target) || value.target), 2, rules.maxLevel);
-    // Version 1 used the old default. Migrate it once; version 2 preserves an explicit original-game choice.
-    value.mode = input.version === 2 && input.mode === 'vanilla' ? 'vanilla' : 'sfall';
+    // Retain the saved field for compatibility; unused picks always accumulate in the planner.
+    value.mode = 'sfall';
     value.goal = perkById(input.goal, value) ? input.goal : 'sniper';
     STATS.forEach(stat => value.base[stat] = clamp(Math.trunc(Number(input.base[stat]) || 1), 1, 10));
     value.traits = [...new Set((Array.isArray(input.traits) ? input.traits : []).filter(id => traits.some(t => t[0] === id)))].slice(0, 2);
@@ -164,7 +164,7 @@
         const minimum = perkById(entry.pick.id, state).level;
         const index = levels.findIndex((level, slot) => {
           const at = entry.pick.manualLevel ? entry.pick.at : Math.max(level, minimum);
-          return !picks[slot] && at >= level && at <= state.target && (state.mode === 'sfall' || !levels[slot + 1] || at < levels[slot + 1]);
+          return !picks[slot] && at >= level && at <= state.target;
         });
         if (index < 0) {rejected.push(entry); continue;}
         picks[index] = {...entry.pick, at: entry.pick.manualLevel ? entry.pick.at : Math.max(levels[index], minimum)};
@@ -254,14 +254,14 @@
       context.traits = context.traits.filter(t => t !== pick.removeTrait).concat(pick.addTrait);
     }
   }
-  function check(state, context, perk, pick, earned, nextEarned, level, bank, scheduleMode) {
+  function check(state, context, perk, pick, earned, level, bank) {
     const stats = statsAt(state, context, level, pick.boosts);
     const permanent = statsAt(state, context, level);
     const requirements = [];
     const add = (kind, name, actual, expected, ok) => requirements.push({kind, name, actual, expected, ok});
     add('level', 'Level', level, perk.level, level >= perk.level);
     add('rank', 'Ranks', context.ranks[perk.id] || 0, perk.ranks, (context.ranks[perk.id] || 0) < perk.ranks);
-    add('slot', 'Perk pick', earned || 0, level, !!earned && level >= earned && (scheduleMode === 'sfall' || !nextEarned || level < nextEarned));
+    add('slot', 'Perk pick', earned || 0, level, !!earned && level >= earned);
     for (const [stat, min] of Object.entries(perk.stats)) if (min) add('stat', stat, stats[stat], min, min < 0 ? stats[stat] < -min : stats[stat] >= min);
     const skillChecks = perk.skills.map(req => ({kind: 'skill', name: req.id, actual: skillValue(state, context, req.id, stats), expected: req.min}));
     const orMet = perk.skillMode === 'or' && skillChecks.some(req => req.actual >= req.expected);
@@ -304,7 +304,7 @@
             bank -= cost; spent += cost;
           }
         }
-        const preview = check(working, projection, perk, event.pick, earned[event.index], earned[event.index + 1], event.pick.at, bank, state.mode);
+        const preview = check(working, projection, perk, event.pick, earned[event.index], event.pick.at, bank);
         if (preview.ok) applyPerk(projection, perk, event.pick);
       }
       // Optional skill goals use the budget left after perk requirements.
@@ -319,7 +319,7 @@
       }
       for (const event of events.filter(e => e.pick.at === level)) {
         const perk = perkById(event.pick.id, state);
-        reports[event.index] = {...check(working, context, perk, event.pick, earned[event.index], earned[event.index + 1], level, bank, state.mode), spent, income, level, perk};
+        reports[event.index] = {...check(working, context, perk, event.pick, earned[event.index], level, bank), spent, income, level, perk};
         if (reports[event.index].ok) {
           applyPerk(context, perk, event.pick);
           if (gameRules(state).id === 'fallout1' && perk.id === 'educated') {bank += 2; income += 2;}
@@ -344,10 +344,8 @@
     if (existing) return {already: true, hasSlot: true, index: Number(existing[0]), pick: state.picks[Number(existing[0])], report: existing[1], result: baseline, ok: baseline.issues.length === 0};
     const earned = schedule(state);
     let index = earned.length - 1;
-    if (state.mode === 'sfall') {
-      const empty = earned.map((_, i) => i).filter(i => !state.picks[i]);
-      if (empty.length) index = empty[empty.length - 1];
-    }
+    const empty = earned.map((_, i) => i).filter(i => !state.picks[i]);
+    if (empty.length) index = empty[empty.length - 1];
     const hasSlot = index >= 0 && !state.picks[index];
     const pick = {id: state.goal, at: state.target, boosts: hasSlot ? state.picks[index]?.boosts || {} : {}};
     const result = simulate(state, index >= 0 ? {index, pick} : undefined);
