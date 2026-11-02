@@ -58,8 +58,8 @@
     return levels.findIndex((level, index) => !state.picks[index] && Math.max(level, perk.level) <= state.target && (state.mode === 'sfall' || !levels[index + 1] || perk.level < levels[index + 1]));
   }
   function noFreePickMessage() {
-    const hint = state.game === 'fallout2' && state.mode === 'vanilla' && perkBudget().remaining > 0
-      ? ' Original rules do not accumulate earlier picks. For sfall, select Accumulate unused picks under SPECIAL → Planned perks.'
+    const hint = state.mode === 'vanilla' && perkBudget().remaining > 0
+      ? ' Original rules do not accumulate earlier picks. Enable Bank unused picks next to Perks left to use accumulation.'
       : '';
     return 'No suitable free pick for another rank. Raise the target level or remove a perk.' + hint;
   }
@@ -194,10 +194,10 @@
     $('target-level').max = rules.maxLevel;
     $('night-person-settings').hidden = !first || !state.traits.includes('night-person');
     $('planning-time').value = state.time || 'day';
-    $('perk-saving-settings').hidden = first;
     $('perk-saving-mode').value = state.mode;
+    $('bank-unused-picks').checked = state.mode === 'sfall';
     $('perk-saving-note').textContent = state.mode === 'sfall'
-      ? 'Every unused pick stays available. Spend it at any later level, including alongside another pick. Use this for games with sfall perk accumulation.'
+      ? 'Every unused pick stays available. Spend it at any later level, including alongside another pick. Enabled by default for both games; match this setting to your game’s accumulation rules.'
       : 'You can postpone a choice, but only one pick is saved. The next perk award replaces an unused pick instead of adding to it.';
     $('fallout1-manual').hidden = !first; $('fallout2-manual').hidden = first;
     $('manual-game').textContent = 'FIELD MANUAL / ' + rules.title.toUpperCase();
@@ -607,9 +607,8 @@
     const input = event.target;
     if (input.id === 'game-select') {
       switchGame(input.value);
-    } else if (input.id === 'perk-saving-mode') {
-      if (state.game !== 'fallout2') return;
-      state.mode = input.value === 'sfall' ? 'sfall' : 'vanilla';
+    } else if (input.id === 'perk-saving-mode' || input.id === 'bank-unused-picks') {
+      state.mode = (input.id === 'bank-unused-picks' ? input.checked : input.value === 'sfall') ? 'sfall' : 'vanilla';
       refresh();
     } else if (input.id === 'mechanic-luck' || input.id === 'mechanic-critical') {
       if (input.id === 'mechanic-luck') mechanicsLuck = Math.max(1, Math.min(10, Math.trunc(Number(input.value) || 1)));

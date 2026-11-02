@@ -85,7 +85,7 @@
   const perkById = (id, game) => catalogFor(game).perks.find(perk => perk.id === id);
   function defaults(game) {
     const rules = gameRules(game);
-    const value = {version: 1, game: rules.id, time: 'day', name: rules.hero, target: rules.id === 'fallout1' ? 21 : 24, goal: 'sniper', mode: 'vanilla',
+    const value = {version: 2, game: rules.id, time: 'day', name: rules.hero, target: rules.id === 'fallout1' ? 21 : 24, goal: 'sniper', mode: 'sfall',
       base: {ST: 5, PE: 6, EN: 4, CH: 2, IN: 7, AG: 9, LK: 7}, traits: ['gifted', 'fast-shot'],
       tags: ['Small Guns', 'Speech', 'Lockpick'], karma: 0, operations: [], picks: [
         {id: 'awareness', at: 3, boosts: {}}, {id: 'more-criticals', at: 6, boosts: {}},
@@ -96,14 +96,15 @@
     return value;
   }
   function cleanState(input) {
-    if (!input || input.version !== 1 || !input.base || !Array.isArray(input.picks)) return null;
+    if (!input || ![1, 2].includes(input.version) || !input.base || !Array.isArray(input.picks)) return null;
     const value = defaults(input.game);
     const rules = gameRules(value), traits = traitsFor(value), operations = operationsFor(value);
     value.time = input.time === 'night' ? 'night' : 'day';
     value.name = typeof input.name === 'string' ? input.name.slice(0, 60) : value.name;
     if (value.name.trim().toLowerCase() === '\u0438\u0437\u0431\u0440\u0430\u043d\u043d\u044b\u0439') value.name = 'Chosen One';
     value.target = clamp(Math.trunc(Number(input.target) || value.target), 2, rules.maxLevel);
-    value.mode = rules.id === 'fallout2' && input.mode === 'sfall' ? 'sfall' : 'vanilla';
+    // Version 1 used the old default. Migrate it once; version 2 preserves an explicit original-game choice.
+    value.mode = input.version === 2 && input.mode === 'vanilla' ? 'vanilla' : 'sfall';
     value.goal = perkById(input.goal, value) ? input.goal : 'sniper';
     STATS.forEach(stat => value.base[stat] = clamp(Math.trunc(Number(input.base[stat]) || 1), 1, 10));
     value.traits = [...new Set((Array.isArray(input.traits) ? input.traits : []).filter(id => traits.some(t => t[0] === id)))].slice(0, 2);

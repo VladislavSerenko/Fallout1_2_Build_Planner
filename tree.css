@@ -35,6 +35,11 @@ main { min-width: 0; min-height: 0; padding: 0; background: #1d261a; border: 1px
 .tree-intro h1 { font: 500 22px/1.3 var(--sans); color: #d6dbbe; letter-spacing: -.4px; }
 .tree-intro p { color: #8d9d7d; font-size: 10px; margin-top: 4px; }
 .tree-options { display: flex; align-items: center; gap: 22px; }
+.perk-budget-group { display: grid; gap: 6px; flex-shrink: 0; }
+.perk-banking-toggle { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 9px; color: #b7c4a3; cursor: pointer; }
+.perk-banking-toggle input { margin: 0; width: 13px; height: 13px; accent-color: #a4c97c; cursor: pointer; }
+.perk-banking-toggle:hover { color: #d1f3ab; }
+.perk-banking-toggle:focus-within { color: #d1f3ab; }
 .perk-budget { display: flex; align-items: center; gap: 10px; white-space: nowrap; font-size: 11px; color: #b7c4a3; }
 .perk-budget strong { display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 5px; border: 1px solid #7f8a57; color: #e2ca82; font-size: 17px; font-weight: normal; background: #1a2415; }
 .perk-budget.budget-empty strong { color: #8f9c7e; border-color: #4b583c; }

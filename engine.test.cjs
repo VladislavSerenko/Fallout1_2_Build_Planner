@@ -5,9 +5,50 @@ require('./fallout1-data.js');
 const E = require('./engine.js');
 
 function fresh(overrides = {}) {
-  return {...E.defaults(), base: {ST: 5, PE: 5, EN: 5, CH: 5, IN: 5, AG: 5, LK: 10}, traits: [], tags: ['Small Guns', 'Repair', 'Speech'], picks: [], skillGoals: {}, operations: [], ...overrides};
+  return {...E.defaults(), mode: 'vanilla', base: {ST: 5, PE: 5, EN: 5, CH: 5, IN: 5, AG: 5, LK: 10}, traits: [], tags: ['Small Guns', 'Repair', 'Speech'], picks: [], skillGoals: {}, operations: [], ...overrides};
 }
 const pick = (id, at, boosts = {}, extra = {}) => ({id, at, boosts, ...extra});
+
+test('Both games accumulate unused perk picks by default', () => {
+  for (const game of ['fallout1', 'fallout2']) {
+    const actual = E.defaults(game);
+    assert.equal(actual.version, 2);
+    assert.equal(actual.mode, 'sfall');
+    assert.equal(E.cleanState(actual).mode, 'sfall');
+  }
+});
+
+test('Legacy saves migrate once to accumulation without changing the character or picks', () => {
+  for (const game of ['fallout1', 'fallout2']) {
+    const input = {...fresh(), version: 1, game, mode: 'vanilla', picks: [pick('awareness', 3, {buffout: 0, mentats: 1, psycho: 0}), null, pick('action-boy', 12, {buffout: 1, mentats: 0, psycho: 0})]};
+    const before = E.clone(input);
+    const actual = E.cleanState(input);
+    assert.equal(actual.version, 2);
+    assert.equal(actual.mode, 'sfall');
+    for (const key of ['game', 'base', 'traits', 'tags', 'operations', 'skillGoals']) assert.deepEqual(actual[key], input[key]);
+    assert.deepEqual(actual.picks.map(p => p && [p.id, p.at, p.boosts]), input.picks.map(p => p && [p.id, p.at, p.boosts]));
+    assert.deepEqual(input, before);
+    assert.equal(E.cleanState({...actual, mode: 'vanilla'}).mode, 'vanilla');
+  }
+});
+
+test('Explicit original-game rules survive JSON roundtrips in both games', () => {
+  for (const game of ['fallout1', 'fallout2']) {
+    const input = {...E.defaults(game), mode: 'vanilla'};
+    const actual = E.cleanState(JSON.parse(JSON.stringify(input)));
+    assert.equal(actual.mode, 'vanilla');
+    assert.equal(E.cleanState(actual).mode, 'vanilla');
+  }
+  assert.equal(E.cleanState({...E.defaults(), version: 3}), null);
+});
+
+test('Fallout 1 can spend accumulated early picks on all three Action Boy ranks', () => {
+  const input = {...E.defaults('fallout1'), target: 12, base: {ST: 5, PE: 5, EN: 5, CH: 5, IN: 5, AG: 10, LK: 5}, traits: [], tags: [], picks: [pick('action-boy', 12), pick('action-boy', 12), pick('action-boy', 12)]};
+  const actual = E.simulate(E.cleanState(input));
+  assert.equal(actual.ranks['action-boy'], 3);
+  assert.ok(Object.values(actual.reports).every(report => report.ok));
+  assert.ok(Object.values(E.simulate({...input, mode: 'vanilla'}).reports).some(report => !report.ok));
+});
 
 test('Automatic picks follow unlock levels regardless of tree selection order', () => {
   const ids = ['sniper', 'bonus-rate-of-fire', 'awareness', 'more-criticals', 'sharpshooter', 'action-boy'];
@@ -411,7 +452,7 @@ test('Fallout 1 import removes Fallout 2-only fields and preserves game and time
   const actual=E.cleanState(input);
   assert.equal(actual.game,'fallout1');
   assert.equal(actual.time,'night');
-  assert.equal(actual.mode,'vanilla');
+  assert.equal(actual.mode,'sfall');
   assert.equal(actual.picks[0],null);
   assert.equal(actual.picks[1].boosts['advanced-armor'],undefined);
   assert.deepEqual(actual.traits,['night-person']);
