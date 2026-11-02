@@ -263,6 +263,7 @@ input[type=checkbox]:checked { background: radial-gradient(ellipse at 40% 35%, #
 .plan-level-settings .inline-label input { width: 51px; padding: 3px 7px; }
 .plan-level-settings .small-note { margin: 0; }
 .perk-rank-control { background: #081405; border: 3px solid; border-color: var(--well-edge); box-shadow: inset 1px 2px 4px #0007; }
+.perk-saving-settings { border: 3px solid; border-color: var(--well-edge); box-shadow: inset 1px 2px 4px #0007; }
 .perk-rank-value { border: 3px solid; border-color: var(--well-edge); background: linear-gradient(90deg, #090f06, #202b18 46%, #090f06); color: #e1d5a1; box-shadow: inset 1px 2px 4px #000b; }
 .plan-configs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
 .plan-ready { color: #c5eaa0; font-size: 11px; padding: 8px 0; }

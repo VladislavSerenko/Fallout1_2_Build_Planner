@@ -26,6 +26,8 @@ Every editable section has its own reset: **Reset SPECIAL** restores base attrib
 
 Perks with multiple ranks have a **− / current of maximum / +** control directly below their description in SPECIAL. **+** immediately schedules another rank in a suitable free pick and copies the selected rank's chems; each rank remains separately editable. **−** removes the latest planned rank while keeping the first. Each rank costs one perk pick, and the control explains when no suitable pick remains. Limits follow the selected game, including two Action Boy ranks in Fallout 2 and three in Fallout 1. Planned rows label each rank separately.
 
+**Unused perk picks** under **SPECIAL → Planned perks** selects the Fallout 2 saving rule. **Original game** stores only one unused pick; another perk award replaces it. **Accumulate unused picks · sfall** retains every unused pick, which can be spent at any later eligible level. For example, a skipped level-6 pick can pay for a second Action Boy rank after level 12. Modern sfall implements this accumulation. The choice is saved in JSON and build links; existing saves keep their explicit `mode`, and the original rules remain the default. Fallout 1 continues to use its original one-pick rule.
+
 ## Calculation rules and scope
 
 | Rule | Fallout 1 | Fallout 2 |
@@ -46,7 +48,7 @@ Perks with multiple ranks have a **− / current of maximum / +** control direct
 - SPECIAL is capped at 1–10. Requirements use current stats, including the chems configured for the specific pick. A perk remains after temporary effects end. Chem bonuses apply only when taking that pick.
 - Skill points are granted for levels 2 through the target. Gifted, Educated and permanent Intelligence upgrades affect income; temporary chems do not. Fallout 2 also has Skilled income and Gain Intelligence. In Fallout 1, Night Person's day/night setting applies throughout the plan, including income; night is evaluated at 18:00.
 - Training uses permanent stats and a bank capped at 99 when leveling. Fallout 1 Educated's immediate +2 can temporarily exceed the bank cap. Both games' initial formulas, tags, training costs, normal perk bonuses and Tag! are modeled. Fallout 1 uses its original skill formulas, rounding down the average for skills based on two attributes. Conditional bonuses from Ghost and Survivalist and Master Trader's hidden pricing bonus do not satisfy skill requirements.
-- In vanilla, spend a saved pick before the next perk event. For Fallout 2, the JSON `mode` field also supports `sfall` for game setups with perk accumulation enabled. Fallout 1 always uses the original pick schedule.
+- Original Fallout 1 and 2 store one unused perk pick; later perk awards replace it. Fallout 2's **Accumulate unused picks · sfall** mode keeps all skipped picks and allows multiple selections at the same level. This mode is available under **SPECIAL → Planned perks** and uses `mode: "sfall"` in JSON. It changes perk saving only; original level, rank, stat and skill requirements still apply.
 - Calculations assume normal difficulty and a new character starting at level 1. Books, NPC training, withdrawal, addiction and modded rules are not modeled. Zeta scans represent an explicitly selected successful outcome with a 50% chance.
 - Here and Now grants a level already included in your target; it does not create a second pick at the same level.
 
@@ -67,6 +69,7 @@ The training route is a concrete automatic plan, not a proof of globally minimal
 - [Numeric perk requirements and effects](https://github.com/alexbatalov/fallout2-ce/blob/main/src/perk.cc)
 - [Current stats include active bonuses](https://github.com/alexbatalov/fallout2-ce/blob/main/src/stat.cc)
 - [Skill points and saved picks](https://github.com/alexbatalov/fallout2-ce/blob/main/src/character_editor.cc)
+- [Perk accumulation in modern sfall](https://github.com/sfall-team/sfall/blob/master/sfall/Modules/Perks.cpp)
 - [Original Fallout 2 logo](https://fallout.wiki/wiki/File:FO2_Game_Logo_Transparent.webp)
 - [Original Fallout 1 logo](https://fallout.wiki/wiki/File:FO1_Game_Logo_Transparent.webp)
 

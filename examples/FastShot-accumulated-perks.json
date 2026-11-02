@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "game": "fallout2",
+  "time": "day",
+  "name": "FastShot",
+  "target": 24,
+  "goal": "sniper",
+  "mode": "sfall",
+  "base": {
+    "ST": 5,
+    "PE": 5,
+    "EN": 3,
+    "CH": 1,
+    "IN": 7,
+    "AG": 9,
+    "LK": 7
+  },
+  "traits": [
+    "gifted",
+    "fast-shot"
+  ],
+  "tags": [
+    "Small Guns",
+    "Unarmed",
+    "Speech"
+  ],
+  "karma": 0,
+  "operations": [],
+  "picks": [
+    {
+      "id": "quick-pockets",
+      "at": 3,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "better-criticals",
+      "at": 9,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "action-boy",
+      "at": 24,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "lifegiver",
+      "at": 12,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "lifegiver",
+      "at": 15,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "action-boy",
+      "at": 18,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "bonus-rate-of-fire",
+      "at": 21,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    },
+    {
+      "id": "sniper",
+      "at": 24,
+      "boosts": {
+        "buffout": 0,
+        "mentats": 0,
+        "psycho": 0
+      },
+      "manualLevel": true,
+      "tag": "",
+      "removeTrait": "",
+      "addTrait": ""
+    }
+  ],
+  "wanted": [],
+  "secrets": [],
+  "skillGoals": {}
+}

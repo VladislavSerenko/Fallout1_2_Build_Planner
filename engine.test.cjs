@@ -102,6 +102,23 @@ test('sfall permits two banked picks at the same level', () => {
   assert.equal(actual.reports[0].ok, true);
   assert.equal(actual.reports[1].ok, true);
 });
+test('A skipped level 6 pick funds a second Action Boy rank when picks accumulate', () => {
+  const input = fresh({target: 24, base: {ST: 5, PE: 5, EN: 3, CH: 1, IN: 7, AG: 9, LK: 7}, traits: ['gifted', 'fast-shot'], tags: ['Small Guns', 'Unarmed', 'Speech'], picks: [pick('quick-pockets', 3), null, pick('better-criticals', 9), pick('lifegiver', 12), pick('lifegiver', 15), pick('action-boy', 18), pick('bonus-rate-of-fire', 21), pick('sniper', 24)]});
+  const original = E.arrangePicks(input);
+  assert.equal(original.picks[1], null);
+  assert.equal(original.picks.filter(Boolean).length, 7);
+  const requested = {...input, picks: [...input.picks]};
+  requested.picks[1] = pick('action-boy', 24);
+  assert.equal(E.simulate(requested).reports[1].requirements.find(req => req.kind === 'slot').ok, false);
+  const accumulated = E.arrangePicks({...requested, mode: 'sfall'});
+  const actual = E.simulate({...requested, mode: 'sfall', ...accumulated});
+  assert.equal(accumulated.picks.filter(Boolean).length, 8);
+  assert.equal(accumulated.picks.filter(item => item.id === 'action-boy').length, 2);
+  assert.equal(actual.ranks['action-boy'], 2);
+  assert.ok(Object.values(actual.reports).filter(report => report.perk.id === 'action-boy').every(report => report.ok));
+  assert.equal(input.picks[1], null);
+  assert.equal(input.mode, 'vanilla');
+});
 test('A third Action Boy rank is rejected', () => {
   const input = fresh({target: 18, picks: [null, null, null, pick('action-boy', 12), pick('action-boy', 15), pick('action-boy', 18)]});
   const actual = E.simulate(input);

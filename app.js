@@ -57,6 +57,12 @@
     const perk = perkById(id), levels = E.schedule(state);
     return levels.findIndex((level, index) => !state.picks[index] && Math.max(level, perk.level) <= state.target && (state.mode === 'sfall' || !levels[index + 1] || perk.level < levels[index + 1]));
   }
+  function noFreePickMessage() {
+    const hint = state.game === 'fallout2' && state.mode === 'vanilla' && perkBudget().remaining > 0
+      ? ' Original rules do not accumulate earlier picks. For sfall, select Accumulate unused picks under SPECIAL → Planned perks.'
+      : '';
+    return 'No suitable free pick for another rank. Raise the target level or remove a perk.' + hint;
+  }
   function perkBudget() {
     const capacity = E.schedule(state).length;
     const used = state.picks.filter(Boolean).length + state.wanted.length;
@@ -128,7 +134,7 @@
     if (step > 0) {
       if (!count || count >= perk.ranks || perkBudget().remaining <= 0) return;
       const index = freeSlot(id);
-      if (index < 0) {notify('No suitable free pick for another rank. Raise the target level or remove a perk.'); return;}
+      if (index < 0) {notify(noFreePickMessage()); return;}
       const source = entries.find(entry => entry.index === activeSlot)?.pick || entries.at(-1)?.pick;
       state.picks[index] = {id, at: Math.max(E.schedule(state)[index], perk.level), boosts: E.clone(source?.boosts || {}), manualLevel: false};
     } else {
@@ -188,6 +194,11 @@
     $('target-level').max = rules.maxLevel;
     $('night-person-settings').hidden = !first || !state.traits.includes('night-person');
     $('planning-time').value = state.time || 'day';
+    $('perk-saving-settings').hidden = first;
+    $('perk-saving-mode').value = state.mode;
+    $('perk-saving-note').textContent = state.mode === 'sfall'
+      ? 'Every unused pick stays available. Spend it at any later level, including alongside another pick. Use this for games with sfall perk accumulation.'
+      : 'You can postpone a choice, but only one pick is saved. The next perk award replaces an unused pick instead of adding to it.';
     $('fallout1-manual').hidden = !first; $('fallout2-manual').hidden = first;
     $('manual-game').textContent = 'FIELD MANUAL / ' + rules.title.toUpperCase();
     $('archive-title').textContent = first ? 'Every advantage has a story.' : 'The wasteland has its own rewards.';
@@ -268,7 +279,7 @@
     $('perk-available').textContent = budget.remaining;
     $('reset-perks').disabled = !budget.used;
     $('reset-planned-perks').disabled = !budget.used;
-    $('perk-budget').title = `${budget.used} of ${budget.capacity} picks used. Wanted perks also reserve a pick.`;
+    $('perk-budget').title = `${budget.used} of ${budget.capacity} picks used. Wanted perks also reserve a pick. ${state.mode === 'sfall' ? 'Unused picks accumulate and can be spent at later levels.' : 'Original rules: earlier free picks cannot be carried past the next perk award.'}`;
     $('perk-budget').classList.toggle('budget-empty', !budget.remaining);
     const search = $('perk-search').value.trim().toLocaleLowerCase('en');
     const levels = E.schedule({...state, target: Math.min(E.gameRules(state).maxLevel, Math.max(24, state.target))});
@@ -311,7 +322,7 @@
           const rankCount = picks.length + Number(pending);
           const showRanks = selected && perk.ranks > 1;
           const canAddRank = showRanks && rankCount < perk.ranks && budget.remaining > 0 && freeSlot(perk.id) >= 0;
-          const rankReason = rankCount >= perk.ranks ? 'All ranks selected' : !budget.remaining ? 'No perk picks left. Remove a perk or raise the target level.' : 'No suitable free pick for another rank. Raise the target level or remove a perk.';
+          const rankReason = rankCount >= perk.ranks ? 'All ranks selected' : !budget.remaining ? 'No perk picks left. Remove a perk or raise the target level.' : noFreePickMessage();
           const rankControls = showRanks ? `<div class="tree-rank-control" role="group" aria-label="Ranks: ${escape(perk.name)}"><button class="metal-button" data-tree-rank-perk="${perk.id}" data-tree-rank-step="-1" aria-label="Remove rank: ${escape(perk.name)}" title="Remove the latest planned rank">−</button><output aria-label="${rankCount} of ${perk.ranks} ranks selected">${rankCount}/${perk.ranks}</output><button class="metal-button" data-tree-rank-perk="${perk.id}" data-tree-rank-step="1" aria-label="Add rank: ${escape(perk.name)}" title="${canAddRank ? 'Add a rank at the next suitable free pick' : rankReason}" ${canAddRank ? '' : 'disabled'}>+</button></div>` : '';
           paths.push(line(`M ${lane.center} ${nodeY - 22} C ${lane.center} ${nodeY - 8}, ${x + 50} ${nodeY - 15}, ${x + 50} ${nodeY + 4}`, selected));
           const badge = perk.family ? `${gainPerks.filter(p => selectedIds.has(p.id)).length || '+'} / 7` : selected ? pending ? 'wanted' : hasProblem ? '!' : picks.length > 1 ? '×' + picks.length : '✓' : '';
@@ -375,7 +386,7 @@
     const configs = inspected === 'tag' ? `<label class="stack-label">Fourth tag skill<select id="pick-tag"><option value="">Select a skill</option>${E.SKILLS.filter(([id]) => !state.tags.includes(id)).map(([id]) => `<option value="${id}" ${draft.tag === id ? 'selected' : ''}>${id}</option>`).join('')}</select></label>` : inspected === 'mutate' ? `<label class="stack-label">Remove trait<select id="mutate-remove"><option value="">Select a trait</option>${E.traitsFor(state).filter(([id]) => (report?.traits || state.traits).includes(id)).map(([id, name]) => `<option value="${id}" ${draft.removeTrait === id ? 'selected' : ''}>${name}</option>`).join('')}</select></label><label class="stack-label">Add trait<select id="mutate-add"><option value="">Select a trait</option>${E.traitsFor(state).filter(([id]) => !(report?.traits || state.traits).includes(id)).map(([id, name]) => `<option value="${id}" ${draft.addTrait === id ? 'selected' : ''}>${name}</option>`).join('')}</select></label>` : '';
     const existingCount = state.picks.filter(item => item?.id === inspected).length + Number(state.wanted.includes(inspected));
     const canAddRank = existingCount > 0 && existingCount < perk.ranks && hasFree && perkBudget().remaining > 0;
-    const rankLimit = existingCount >= perk.ranks ? 'All ranks selected.' : !perkBudget().remaining ? 'No perk picks left. Remove a perk or raise the target level.' : !hasFree ? 'No suitable free pick for another rank. Raise the target level or remove a perk.' : '';
+    const rankLimit = existingCount >= perk.ranks ? 'All ranks selected.' : !perkBudget().remaining ? 'No perk picks left. Remove a perk or raise the target level.' : !hasFree ? noFreePickMessage() : '';
     const rankControls = perk.ranks > 1 && existingCount ? `<div class="perk-rank-control"><span class="perk-rank-label">Planned ranks<small>Each rank uses one perk pick.</small></span><div class="perk-rank-stepper" role="group" aria-label="Planned ranks: ${escape(perk.name)}"><button class="metal-button" data-rank-perk="${perk.id}" data-rank-step="-1" aria-label="Remove last rank: ${escape(perk.name)}" title="Remove the latest planned rank" ${existingCount > 1 ? '' : 'disabled'}>−</button><output class="perk-rank-value" aria-label="${existingCount} of ${perk.ranks} ranks selected">${existingCount} <span>of ${perk.ranks}</span></output><button class="metal-button" data-rank-perk="${perk.id}" data-rank-step="1" aria-label="Add rank: ${escape(perk.name)}" title="${rankLimit || 'Add a rank at the next suitable free pick'}" ${canAddRank ? '' : 'disabled'}>+</button></div>${!canAddRank && existingCount < perk.ranks ? `<p class="perk-rank-note">${rankLimit}</p>` : ''}</div>` : '';
     const boostsOpen = E.boostsFor(state).some(boost => Number(draft.boosts?.[boost.id] || 0));
     return `<p class="plan-description">${escape(perk.description)}</p>${rankControls}${!assigned && !hasFree ? `<div class="remedy">${perk.level > state.target ? `Requires level ${perk.level}; your target is ${state.target}. ` : ''}No suitable free perk pick. Raise the target level or remove another perk.</div>` : ''}${kind === 'slot' && !assigned ? `<label class="stack-label">Perk<select id="inspect-perk">${DATA.perks.map(p => `<option value="${p.id}" ${p.id === inspected ? 'selected' : ''}>${p.name}</option>`).join('')}</select></label>` : ''}<div class="plan-level-settings"><label class="inline-label">Take at level<input id="pick-level" type="number" min="${minimum}" max="${E.gameRules(state).maxLevel}" value="${draft.at}" aria-label="Level when taking ${perk.name}"></label><span class="small-note">Pick earned at level ${result.earned[activeSlot] || '—'}</span></div>${configs ? `<div class="plan-configs">${configs}</div>` : ''}${report ? preparationHTML(report) : `<div class="remedy">${draft.at > state.target ? `This perk is planned at level ${draft.at}, above your target of ${state.target}.` : 'No perk pick is available at this level.'}</div>`}<details class="boost-options" ${boostsOpen ? 'open' : ''}><summary>Chems</summary><p class="small-note">Only active when taking this perk. Chems count toward ${E.gameRules(state).title} perk requirements.</p>${E.boostsFor(state).map(boost => `<label class="boost-row"><span title="${escape(boost.note)}">${boost.name}<small>${Object.entries(boost.stats).map(([s, n]) => s + (n > 0 ? ' +' : ' ') + n).join(' · ')}</small></span><select data-boost="${boost.id}" aria-label="Quantity: ${boost.name}">${Array.from({length: boost.max + 1}, (_, n) => `<option value="${n}" ${Number(draft.boosts?.[boost.id] || 0) === n ? 'selected' : ''}>${n}${boost.kind === 'chem' ? '×' : ''}</option>`).join('')}</select></label>`).join('')}</details><div class="plan-actions">${!assigned ? `<button id="choose-perk" class="metal-button" ${hasFree && perkBudget().remaining > 0 ? '' : 'disabled'}>Add perk</button>` : ''}${assigned || kind === 'wanted' ? '<button data-remove-plan class="text-button">Remove perk ×</button>' : ''}<a href="${perk.source}" target="_blank" rel="noopener noreferrer">Wiki ↗</a></div>`;
@@ -596,6 +607,10 @@
     const input = event.target;
     if (input.id === 'game-select') {
       switchGame(input.value);
+    } else if (input.id === 'perk-saving-mode') {
+      if (state.game !== 'fallout2') return;
+      state.mode = input.value === 'sfall' ? 'sfall' : 'vanilla';
+      refresh();
     } else if (input.id === 'mechanic-luck' || input.id === 'mechanic-critical') {
       if (input.id === 'mechanic-luck') mechanicsLuck = Math.max(1, Math.min(10, Math.trunc(Number(input.value) || 1)));
       else mechanicsCritical = Math.max(0, Math.min(100, Number(input.value) || 0));

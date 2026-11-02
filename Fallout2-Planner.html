@@ -162,6 +162,10 @@ dialog::backdrop { background: #070d08a6; backdrop-filter: blur(2px); }
 .drawer .tag-controls { grid-template-columns: 1fr 1fr; font-size: 10px; gap: 7px; }
 .selected-perks-section { margin-top: 27px; border-top: 1px solid #62734d; padding-top: 3px; }
 .selected-perks-section .section-title { margin-top: 18px; margin-bottom: 15px; }
+.perk-saving-settings { margin-bottom: 17px; padding: 11px 13px; border: 2px inset #627749; border-radius: 9px; background: #0b1707; }
+.perk-saving-settings label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 9px 15px; font-size: 11px; color: #c4d6a7; }
+.perk-saving-settings select { width: 285px; max-width: 100%; min-width: 0; padding: 6px; font-size: 10px; }
+.perk-saving-settings p { margin: 9px 0 0; color: #94ae7b; font-size: 10px; line-height: 1.8; }
 .header-actions .has-selection { border-color: #a28e52; color: #e0c98e; }
 .drawer .operation-option { padding: 10px 0; font-size: 11px; }
 .drawer .operation-option small { font-size: 10px; }
@@ -593,6 +597,7 @@ input[type=checkbox]:checked { background: radial-gradient(ellipse at 40% 35%, #
 .plan-level-settings .inline-label input { width: 51px; padding: 3px 7px; }
 .plan-level-settings .small-note { margin: 0; }
 .perk-rank-control { background: #081405; border: 3px solid; border-color: var(--well-edge); box-shadow: inset 1px 2px 4px #0007; }
+.perk-saving-settings { border: 3px solid; border-color: var(--well-edge); box-shadow: inset 1px 2px 4px #0007; }
 .perk-rank-value { border: 3px solid; border-color: var(--well-edge); background: linear-gradient(90deg, #090f06, #202b18 46%, #090f06); color: #e1d5a1; box-shadow: inset 1px 2px 4px #000b; }
 .plan-configs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
 .plan-ready { color: #c5eaa0; font-size: 11px; padding: 8px 0; }
@@ -846,21 +851,21 @@ main::after { border-radius: calc(var(--screen-radius) - var(--screen-edge)); }
     <div class="section-title"><h3>SKILLS</h3><div class="section-actions"><span id="tag-count">0 / 3 tagged</span><button id="reset-skills" class="metal-button reset-button" title="Clear optional skill goals; keep tag skills and perk training">Reset skills</button></div></div>
     <section class="screen skills-screen"><div class="skill-point-budget" role="status" title="Planning budget: total earned by your target minus planned skill training. The separate unspent bank is what you carry at the target level; leveling caps it at 99. Assigning earlier training can use points otherwise lost to that cap."><div class="skill-point-heading"><span>Skill points left</span><small id="skill-points-level">At target level</small></div><strong id="skill-points-remaining">000</strong><div class="skill-point-breakdown"><span>Earned <b id="skill-points-earned">0</b></span><span>Spent <b id="skill-points-spent">0</b></span><span>Unspent bank <b id="skill-points-available">0</b></span><span id="skill-points-loss" hidden>Lost to cap <b id="skill-points-lost">0</b></span></div></div><div class="skills-panel-legend"><span>Tag up to 3 skills</span><span>At target → Goal</span></div><div id="skills-grid" class="skills-grid"></div><p class="section-note">Perk requirements get skill points first. Optional goals use the remaining budget.</p><details class="training-details"><summary>Training plan by level</summary><div id="training-plan"></div></details></section>
     <details class="side-details" id="operations-section"><summary><span>Operations and upgrades</span><span class="section-actions"><button id="reset-upgrades" class="metal-button reset-button" title="Clear all scheduled operations and upgrades">Reset upgrades</button></span></summary><p class="small-note">Set the first level at which an upgrade applies, before receiving skill points and choosing a perk.</p><div id="operation-controls" class="operation-controls"></div></details>
-    <section class="selected-perks-section" id="selected-perks-section" aria-labelledby="selected-perks-title"><div class="section-title"><h3 id="selected-perks-title">PLANNED PERKS</h3><div class="section-actions"><span id="selected-count">0</span><button id="reset-planned-perks" class="metal-button reset-button" title="Clear all selected perks and ranks">Reset perks</button></div></div><div id="planned-picks" class="planned-picks"></div></section>
+    <section class="selected-perks-section" id="selected-perks-section" aria-labelledby="selected-perks-title"><div class="section-title"><h3 id="selected-perks-title">PLANNED PERKS</h3><div class="section-actions"><span id="selected-count">0</span><button id="reset-planned-perks" class="metal-button reset-button" title="Clear all selected perks and ranks">Reset perks</button></div></div><div id="perk-saving-settings" class="perk-saving-settings"><label for="perk-saving-mode">Unused perk picks<select id="perk-saving-mode" aria-describedby="perk-saving-note"><option value="vanilla">Original game · one saved pick</option><option value="sfall">Accumulate unused picks · sfall</option></select></label><p id="perk-saving-note"></p></div><div id="planned-picks" class="planned-picks"></div></section>
   </div></dialog>
 
   <dialog id="rules-dialog" class="drawer wide-drawer" aria-labelledby="rules-title"><div class="drawer-heading"><h2 id="rules-title">How it works</h2><button class="close-button" data-close aria-label="Close field manual" autofocus>×</button></div><div class="drawer-body rules-view">
     <p class="tree-rule">Levels are on the left, available perks on the right. Lines group development branches; they do not represent required perk dependencies. Click a perk to select it, and click again to remove it. The “i” button opens the perk in SPECIAL. Click a planned perk to expand its missing requirements and preparation in place. Every rank and wanted perk reserves one pick. When no picks remain, remove a perk or raise your target level. Open SPECIAL to edit your character and planned picks.</p>
     <span id="manual-game" class="eyebrow">FIELD MANUAL / FALLOUT 2</span><h2>Knowing the rules is an advantage.</h2>
     <div class="rules-grid" id="fallout1-manual" hidden>
-      <article class="screen rule"><h3>01 / Fallout 1 levels and perks</h3><p>53 selectable perks, a maximum level of 21 and a pick every 3 levels, or every 4 with Skilled. Sniper and Slayer unlock at level 18. Action Boy, Bonus Move and Quick Pockets have three ranks.</p><p>Choose the time to spend each earned pick. Spend it before the next perk event; picks do not accumulate. Each game keeps its own saved build.</p></article>
+      <article class="screen rule"><h3>01 / Fallout 1 levels and perks</h3><p>53 selectable perks, a maximum level of 21 and a pick every 3 levels, or every 4 with Skilled. Sniper and Slayer unlock at level 18. Action Boy, Bonus Move and Quick Pockets have three ranks.</p><p>You can postpone a perk choice, but the original game stores only one unused pick. Another perk award replaces that pick rather than adding to it. Each game keeps its own saved build.</p></article>
       <article class="screen rule"><h3>02 / Requirements and upgrades</h3><p>Active chems count toward requirements. Set Buffout, Mentats and Psycho separately for each perk.</p><p>Lorri can improve five SPECIAL stats at Lost Hills. Chuck's fortune can raise Luck; Patrick's song can raise Charisma. Schedule these in Operations and upgrades. Access, costs, dialogue checks and travel time are up to you to plan.</p></article>
       <article class="screen rule"><h3>03 / Fallout 1 skills</h3><p>Original Fallout skill formulas are used, including the rounded-down average of two associated attributes. Skills cap at 200%; each training purchase costs 1 point, and tag skills gain 2% per point. Tag! also grants its fourth skill an immediate +20%.</p><p>Skilled gives +10% to every skill and no extra income. Per-level income is 5 + 2 × permanent IN, −5 with Gifted, +2 per Educated rank. Educated also grants 2 points immediately when selected. The bank cap is 99 when leveling.</p></article>
       <article class="screen rule"><h3>04 / Traits and scope</h3><p>Night Person replaces Fallout 2's Sex Appeal. Select daytime or night at 18:00 for its Perception and Intelligence modifiers; this planning time applies throughout the build, including skill income. Mutate! uses an explicit trait replacement.</p><p>Master Thief, Medic, Mr. Fixit and Speaker use their original Fallout bonuses. Conditional bonuses from Ghost and Survivalist and Master Trader's hidden pricing bonus do not satisfy skill requirements. Books, NPC skill training, withdrawal, addiction and exploits are not modeled.</p></article>
       <article class="screen rule"><h3>05 / Sources</h3><p>Catalog and original artwork: Fallout Wiki. Numeric requirements, skill formulas, trait effects and level-up behavior were checked against fallout1-ce, which recreates the original engine.</p><ul id="source-links-fo1"></ul><p class="small-note">Data checked November 1, 2026. Fallout artwork belongs to its respective owners.</p></article>
     </div>
     <div class="rules-grid" id="fallout2-manual">
-      <article class="screen rule"><h3>01 / Levels and picks</h3><p>One perk pick every 3 levels; Skilled changes the interval to 4. A perk's minimum level stays the same. You can use a saved pick at an intermediate level, for example the level 18 pick at level 20.</p><p>In the original game, use a pick before the next one is earned. The sfall mode preserves picks and assumes that perk accumulation is enabled in your game setup.</p></article>
+      <article class="screen rule"><h3>01 / Levels and picks</h3><p>One perk pick every 3 levels; Skilled changes the interval to 4. A perk's minimum level stays the same. You can postpone a choice, for example using the level 18 pick at level 20.</p><p>The original game stores only one unused pick: the next perk award replaces it. Modern <a href="https://github.com/sfall-team/sfall/blob/master/sfall/Modules/Perks.cpp" target="_blank" rel="noopener noreferrer">sfall</a> accumulates unused picks and lets you spend them later, including multiple picks at one level. Set the rule under SPECIAL → Planned perks → Unused perk picks to match your game.</p></article>
       <article class="screen rule"><h3>02 / Chems</h3><p>SPECIAL and skill requirements use active chem effects. Set Buffout, Mentats and Psycho separately for each perk. A perk remains after the effect wears off.</p><p>The wiki confirms the chem rule; fallout2-ce checks current stats. Up to two doses of each chem and the SPECIAL cap of 10 are modeled. Withdrawal, addiction and save/load stacking are not modeled. Temporary Intelligence does not increase skill point income.</p></article>
       <article class="screen rule"><h3>03 / Skill points</h3><p>Per level: 5 + 2 × permanent IN, +5 for Skilled, −5 for Gifted, +2 per Educated rank. Educated and Gain Intelligence help from the next level. ACE upgrades apply from their specified level.</p><p>Three tag skills receive +20% and double training gains. Each training purchase costs 1 point through 100%, then 2 / 3 / 4 / 5 / 6 points above 100 / 125 / 150 / 175 / 200%. Tag! doubles invested gains in a fourth skill without another initial +20%.</p></article>
       <article class="screen rule"><h3>04 / Automatic training</h3><p>The planner trains skills ahead of upcoming perks, then works toward optional skill goals. The unspent bank is capped at 99 points. A perk whose requirements are not met grants no effects to later levels.</p><p>Calculations assume normal difficulty, training without temporary chems and a new character starting at level 1. Books, NPC training and event perk bonuses are not added automatically. The event archive is a checklist. A Zeta scan represents an explicitly selected successful outcome, not a guaranteed bonus.</p></article>
@@ -4877,6 +4882,12 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
     const perk = perkById(id), levels = E.schedule(state);
     return levels.findIndex((level, index) => !state.picks[index] && Math.max(level, perk.level) <= state.target && (state.mode === 'sfall' || !levels[index + 1] || perk.level < levels[index + 1]));
   }
+  function noFreePickMessage() {
+    const hint = state.game === 'fallout2' && state.mode === 'vanilla' && perkBudget().remaining > 0
+      ? ' Original rules do not accumulate earlier picks. For sfall, select Accumulate unused picks under SPECIAL → Planned perks.'
+      : '';
+    return 'No suitable free pick for another rank. Raise the target level or remove a perk.' + hint;
+  }
   function perkBudget() {
     const capacity = E.schedule(state).length;
     const used = state.picks.filter(Boolean).length + state.wanted.length;
@@ -4948,7 +4959,7 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
     if (step > 0) {
       if (!count || count >= perk.ranks || perkBudget().remaining <= 0) return;
       const index = freeSlot(id);
-      if (index < 0) {notify('No suitable free pick for another rank. Raise the target level or remove a perk.'); return;}
+      if (index < 0) {notify(noFreePickMessage()); return;}
       const source = entries.find(entry => entry.index === activeSlot)?.pick || entries.at(-1)?.pick;
       state.picks[index] = {id, at: Math.max(E.schedule(state)[index], perk.level), boosts: E.clone(source?.boosts || {}), manualLevel: false};
     } else {
@@ -5008,6 +5019,11 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
     $('target-level').max = rules.maxLevel;
     $('night-person-settings').hidden = !first || !state.traits.includes('night-person');
     $('planning-time').value = state.time || 'day';
+    $('perk-saving-settings').hidden = first;
+    $('perk-saving-mode').value = state.mode;
+    $('perk-saving-note').textContent = state.mode === 'sfall'
+      ? 'Every unused pick stays available. Spend it at any later level, including alongside another pick. Use this for games with sfall perk accumulation.'
+      : 'You can postpone a choice, but only one pick is saved. The next perk award replaces an unused pick instead of adding to it.';
     $('fallout1-manual').hidden = !first; $('fallout2-manual').hidden = first;
     $('manual-game').textContent = 'FIELD MANUAL / ' + rules.title.toUpperCase();
     $('archive-title').textContent = first ? 'Every advantage has a story.' : 'The wasteland has its own rewards.';
@@ -5088,7 +5104,7 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
     $('perk-available').textContent = budget.remaining;
     $('reset-perks').disabled = !budget.used;
     $('reset-planned-perks').disabled = !budget.used;
-    $('perk-budget').title = `${budget.used} of ${budget.capacity} picks used. Wanted perks also reserve a pick.`;
+    $('perk-budget').title = `${budget.used} of ${budget.capacity} picks used. Wanted perks also reserve a pick. ${state.mode === 'sfall' ? 'Unused picks accumulate and can be spent at later levels.' : 'Original rules: earlier free picks cannot be carried past the next perk award.'}`;
     $('perk-budget').classList.toggle('budget-empty', !budget.remaining);
     const search = $('perk-search').value.trim().toLocaleLowerCase('en');
     const levels = E.schedule({...state, target: Math.min(E.gameRules(state).maxLevel, Math.max(24, state.target))});
@@ -5131,7 +5147,7 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
           const rankCount = picks.length + Number(pending);
           const showRanks = selected && perk.ranks > 1;
           const canAddRank = showRanks && rankCount < perk.ranks && budget.remaining > 0 && freeSlot(perk.id) >= 0;
-          const rankReason = rankCount >= perk.ranks ? 'All ranks selected' : !budget.remaining ? 'No perk picks left. Remove a perk or raise the target level.' : 'No suitable free pick for another rank. Raise the target level or remove a perk.';
+          const rankReason = rankCount >= perk.ranks ? 'All ranks selected' : !budget.remaining ? 'No perk picks left. Remove a perk or raise the target level.' : noFreePickMessage();
           const rankControls = showRanks ? `<div class="tree-rank-control" role="group" aria-label="Ranks: ${escape(perk.name)}"><button class="metal-button" data-tree-rank-perk="${perk.id}" data-tree-rank-step="-1" aria-label="Remove rank: ${escape(perk.name)}" title="Remove the latest planned rank">−</button><output aria-label="${rankCount} of ${perk.ranks} ranks selected">${rankCount}/${perk.ranks}</output><button class="metal-button" data-tree-rank-perk="${perk.id}" data-tree-rank-step="1" aria-label="Add rank: ${escape(perk.name)}" title="${canAddRank ? 'Add a rank at the next suitable free pick' : rankReason}" ${canAddRank ? '' : 'disabled'}>+</button></div>` : '';
           paths.push(line(`M ${lane.center} ${nodeY - 22} C ${lane.center} ${nodeY - 8}, ${x + 50} ${nodeY - 15}, ${x + 50} ${nodeY + 4}`, selected));
           const badge = perk.family ? `${gainPerks.filter(p => selectedIds.has(p.id)).length || '+'} / 7` : selected ? pending ? 'wanted' : hasProblem ? '!' : picks.length > 1 ? '×' + picks.length : '✓' : '';
@@ -5195,7 +5211,7 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
     const configs = inspected === 'tag' ? `<label class="stack-label">Fourth tag skill<select id="pick-tag"><option value="">Select a skill</option>${E.SKILLS.filter(([id]) => !state.tags.includes(id)).map(([id]) => `<option value="${id}" ${draft.tag === id ? 'selected' : ''}>${id}</option>`).join('')}</select></label>` : inspected === 'mutate' ? `<label class="stack-label">Remove trait<select id="mutate-remove"><option value="">Select a trait</option>${E.traitsFor(state).filter(([id]) => (report?.traits || state.traits).includes(id)).map(([id, name]) => `<option value="${id}" ${draft.removeTrait === id ? 'selected' : ''}>${name}</option>`).join('')}</select></label><label class="stack-label">Add trait<select id="mutate-add"><option value="">Select a trait</option>${E.traitsFor(state).filter(([id]) => !(report?.traits || state.traits).includes(id)).map(([id, name]) => `<option value="${id}" ${draft.addTrait === id ? 'selected' : ''}>${name}</option>`).join('')}</select></label>` : '';
     const existingCount = state.picks.filter(item => item?.id === inspected).length + Number(state.wanted.includes(inspected));
     const canAddRank = existingCount > 0 && existingCount < perk.ranks && hasFree && perkBudget().remaining > 0;
-    const rankLimit = existingCount >= perk.ranks ? 'All ranks selected.' : !perkBudget().remaining ? 'No perk picks left. Remove a perk or raise the target level.' : !hasFree ? 'No suitable free pick for another rank. Raise the target level or remove a perk.' : '';
+    const rankLimit = existingCount >= perk.ranks ? 'All ranks selected.' : !perkBudget().remaining ? 'No perk picks left. Remove a perk or raise the target level.' : !hasFree ? noFreePickMessage() : '';
     const rankControls = perk.ranks > 1 && existingCount ? `<div class="perk-rank-control"><span class="perk-rank-label">Planned ranks<small>Each rank uses one perk pick.</small></span><div class="perk-rank-stepper" role="group" aria-label="Planned ranks: ${escape(perk.name)}"><button class="metal-button" data-rank-perk="${perk.id}" data-rank-step="-1" aria-label="Remove last rank: ${escape(perk.name)}" title="Remove the latest planned rank" ${existingCount > 1 ? '' : 'disabled'}>−</button><output class="perk-rank-value" aria-label="${existingCount} of ${perk.ranks} ranks selected">${existingCount} <span>of ${perk.ranks}</span></output><button class="metal-button" data-rank-perk="${perk.id}" data-rank-step="1" aria-label="Add rank: ${escape(perk.name)}" title="${rankLimit || 'Add a rank at the next suitable free pick'}" ${canAddRank ? '' : 'disabled'}>+</button></div>${!canAddRank && existingCount < perk.ranks ? `<p class="perk-rank-note">${rankLimit}</p>` : ''}</div>` : '';
     const boostsOpen = E.boostsFor(state).some(boost => Number(draft.boosts?.[boost.id] || 0));
     return `<p class="plan-description">${escape(perk.description)}</p>${rankControls}${!assigned && !hasFree ? `<div class="remedy">${perk.level > state.target ? `Requires level ${perk.level}; your target is ${state.target}. ` : ''}No suitable free perk pick. Raise the target level or remove another perk.</div>` : ''}${kind === 'slot' && !assigned ? `<label class="stack-label">Perk<select id="inspect-perk">${DATA.perks.map(p => `<option value="${p.id}" ${p.id === inspected ? 'selected' : ''}>${p.name}</option>`).join('')}</select></label>` : ''}<div class="plan-level-settings"><label class="inline-label">Take at level<input id="pick-level" type="number" min="${minimum}" max="${E.gameRules(state).maxLevel}" value="${draft.at}" aria-label="Level when taking ${perk.name}"></label><span class="small-note">Pick earned at level ${result.earned[activeSlot] || '—'}</span></div>${configs ? `<div class="plan-configs">${configs}</div>` : ''}${report ? preparationHTML(report) : `<div class="remedy">${draft.at > state.target ? `This perk is planned at level ${draft.at}, above your target of ${state.target}.` : 'No perk pick is available at this level.'}</div>`}<details class="boost-options" ${boostsOpen ? 'open' : ''}><summary>Chems</summary><p class="small-note">Only active when taking this perk. Chems count toward ${E.gameRules(state).title} perk requirements.</p>${E.boostsFor(state).map(boost => `<label class="boost-row"><span title="${escape(boost.note)}">${boost.name}<small>${Object.entries(boost.stats).map(([s, n]) => s + (n > 0 ? ' +' : ' ') + n).join(' · ')}</small></span><select data-boost="${boost.id}" aria-label="Quantity: ${boost.name}">${Array.from({length: boost.max + 1}, (_, n) => `<option value="${n}" ${Number(draft.boosts?.[boost.id] || 0) === n ? 'selected' : ''}>${n}${boost.kind === 'chem' ? '×' : ''}</option>`).join('')}</select></label>`).join('')}</details><div class="plan-actions">${!assigned ? `<button id="choose-perk" class="metal-button" ${hasFree && perkBudget().remaining > 0 ? '' : 'disabled'}>Add perk</button>` : ''}${assigned || kind === 'wanted' ? '<button data-remove-plan class="text-button">Remove perk ×</button>' : ''}<a href="${perk.source}" target="_blank" rel="noopener noreferrer">Wiki ↗</a></div>`;
@@ -5416,6 +5432,10 @@ FO1_DATA.perks.forEach(perk => { if (["gain-perception", "gain-endurance", "gain
     const input = event.target;
     if (input.id === 'game-select') {
       switchGame(input.value);
+    } else if (input.id === 'perk-saving-mode') {
+      if (state.game !== 'fallout2') return;
+      state.mode = input.value === 'sfall' ? 'sfall' : 'vanilla';
+      refresh();
     } else if (input.id === 'mechanic-luck' || input.id === 'mechanic-critical') {
       if (input.id === 'mechanic-luck') mechanicsLuck = Math.max(1, Math.min(10, Math.trunc(Number(input.value) || 1)));
       else mechanicsCritical = Math.max(0, Math.min(100, Number(input.value) || 0));

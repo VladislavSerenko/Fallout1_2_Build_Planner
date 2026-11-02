@@ -140,6 +140,10 @@ dialog::backdrop { background: #070d08a6; backdrop-filter: blur(2px); }
 .drawer .tag-controls { grid-template-columns: 1fr 1fr; font-size: 10px; gap: 7px; }
 .selected-perks-section { margin-top: 27px; border-top: 1px solid #62734d; padding-top: 3px; }
 .selected-perks-section .section-title { margin-top: 18px; margin-bottom: 15px; }
+.perk-saving-settings { margin-bottom: 17px; padding: 11px 13px; border: 2px inset #627749; border-radius: 9px; background: #0b1707; }
+.perk-saving-settings label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 9px 15px; font-size: 11px; color: #c4d6a7; }
+.perk-saving-settings select { width: 285px; max-width: 100%; min-width: 0; padding: 6px; font-size: 10px; }
+.perk-saving-settings p { margin: 9px 0 0; color: #94ae7b; font-size: 10px; line-height: 1.8; }
 .header-actions .has-selection { border-color: #a28e52; color: #e0c98e; }
 .drawer .operation-option { padding: 10px 0; font-size: 11px; }
 .drawer .operation-option small { font-size: 10px; }
