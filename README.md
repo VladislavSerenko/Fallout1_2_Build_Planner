@@ -1,3 +1,5 @@
+Disclaimer - Instrument was made with AI tools
+
 # Fallout 1 & 2 — Perk Planner
 
 Open **Fallout2-Planner.html** in Edge, Chrome or Firefox. This single file works offline with no server or installation. Alternatively, open `index.html` with the other source files, `assets` and `branding` beside it.
